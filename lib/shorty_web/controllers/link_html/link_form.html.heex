@@ -1,0 +1,9 @@
+<.form :let={f} for={@changeset} action={@action}>
+  <.input field={f[:original_url]} type="text" label="Original url" required />
+  <.input field={f[:title]} type="text" label="Title" required />
+  <% # <.input field={f[:slug]} type="text" label="Slug (Optional Unique ID)" /> %>
+  <footer>
+    <.button variant="primary">Save Link</.button>
+    <.button :if={@return_to} href={@return_to}>Cancel</.button>
+  </footer>
+</.form>

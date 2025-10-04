@@ -1,0 +1,8 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    New Link
+    <:subtitle>Use this form to manage link records in your database.</:subtitle>
+  </.header>
+
+  <.link_form changeset={@changeset} action={~p"/links"} return_to={~p"/links"} />
+</Layouts.app>

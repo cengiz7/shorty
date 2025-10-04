@@ -1,0 +1,21 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    Link "{@link.slug}"
+    <:subtitle>This is a link record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/links"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.button variant="primary" navigate={~p"/links/#{@link.slug}/edit?return_to=show"}>
+        <.icon name="hero-pencil-square" /> Edit link
+      </.button>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title="Original url">{@link.original_url}</:item>
+    <:item title="Slug">{@link.slug}</:item>
+    <:item title="Title">{@link.title}</:item>
+    <:item title="View count">{@link.view_count}</:item>
+  </.list>
+</Layouts.app>
