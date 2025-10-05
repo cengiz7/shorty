@@ -14,4 +14,9 @@ defmodule ShortyWeb.LinkHTML do
   attr :return_to, :string, default: nil
 
   def link_form(assigns)
+
+  def format_timestamp(timestamp) do
+    timestamp
+    |> NaiveDateTime.to_string()
+  end
 end

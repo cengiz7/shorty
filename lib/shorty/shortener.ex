@@ -7,8 +7,8 @@ defmodule Shorty.Shortener do
   alias Shorty.Repo
 
   alias Shorty.Shortener.Link
+  alias Shorty.Shortener.Click
   alias Shorty.Accounts.User
-
 
   @doc """
   Returns the list of links for a user.
@@ -38,6 +38,25 @@ defmodule Shorty.Shortener do
 
   """
   def get_link!(slug), do: Repo.get_by!(Link, slug: slug)
+
+  @doc """
+  Gets a single link with its clicks.
+
+  Raises `Ecto.NoResultsError` if the Link does not exist.
+
+  ## Examples
+
+      iex> get_link_with_clicks!(123)
+      %Link{clicks: [%Click{}, ...]}
+
+      iex> get_link_with_clicks!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_link_with_clicks!(slug) do
+    Repo.get_by!(Link, slug: slug)
+    |> Repo.preload(:clicks)
+  end
 
   @doc """
   Creates a link for a user.
@@ -110,7 +129,6 @@ defmodule Shorty.Shortener do
     Link.changeset(link, attrs)
   end
 
-
   # Generates a unique, URL-safe, 6-character slug.
   defp generate_slug do
     slug =
@@ -139,7 +157,6 @@ defmodule Shorty.Shortener do
 
   """
   def get_link_and_increment_view_count(slug) do
-    IO.inspect([slug, "slug bu"])
     case Repo.get_by(Link, slug: slug) do
       nil ->
         {:error, :not_found}
@@ -149,5 +166,65 @@ defmodule Shorty.Shortener do
         |> Ecto.Changeset.change(%{view_count: link.view_count + 1})
         |> Repo.update()
     end
+  end
+
+  @doc """
+  Creates a click.
+
+  ## Examples
+
+      iex> create_click(%{field: :value})
+      {:ok, %Click{}}
+
+      iex> create_click(%{field: :bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_click(attrs \\ %{}) do
+    %Click{}
+    |> Click.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Tracks a click for a link.
+  """
+  def track_click(link, ip_address, user_agent, referrer) do
+    attrs = %{
+      link_id: link.id,
+      timestamp: NaiveDateTime.utc_now(),
+      ip_address: ip_address,
+      user_agent: user_agent,
+      referrer: referrer
+    }
+
+    create_click(attrs)
+  end
+
+  @doc """
+  Paginates the clicks for a link.
+  """
+  def paginate_clicks_for_link(link, page) do
+    page_size = 5
+    page = if is_nil(page) || page < 1, do: 1, else: page |> trunc
+
+    base_query = from c in Click, where: c.link_id == ^link.id
+
+    query = order_by(base_query, [c], desc: c.inserted_at)
+
+    offset = (page - 1) * page_size
+    entries_query = query |> limit(^page_size) |> offset(^offset)
+
+    entries = Repo.all(entries_query)
+    total_entries = Repo.one(from c in base_query, select: count(c.id))
+    total_pages = if total_entries > 0, do: ceil(total_entries / page_size) |> trunc, else: 1
+
+    %{
+      entries: entries,
+      page_number: page,
+      page_size: page_size,
+      total_entries: total_entries,
+      total_pages: total_pages
+    }
   end
 end

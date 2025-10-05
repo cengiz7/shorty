@@ -18,4 +18,46 @@
     <:item title="Title">{@link.title}</:item>
     <:item title="View count">{@link.view_count}</:item>
   </.list>
+
+  <hr class="my-4" />
+
+  <.header>
+    Clicks
+    <:subtitle>Here are the latest clicks for this link.</:subtitle>
+  </.header>
+
+  <.table id="clicks" rows={@clicks_page.entries}>
+    <:col :let={click} label="Timestamp"><%= ShortyWeb.LinkHTML.format_timestamp(click.timestamp) %></:col>
+    <:col :let={click} label="IP Address"><%= click.ip_address %></:col>
+    <:col :let={click} label="User Agent"><%= click.user_agent %></:col>
+    <:col :let={click} label="Referrer"><%= click.referrer %></:col>
+  </.table>
+
+  <div class="flex justify-between items-center mt-4">
+    <div>
+      <p class="text-sm text-gray-700">
+        Showing
+        <span class="font-medium"><%= @clicks_page.page_number * @clicks_page.page_size - @clicks_page.page_size + 1 %></span>
+        to
+        <span class="font-medium"><%= @clicks_page.page_number * @clicks_page.page_size %></span>
+        of
+        <span class="font-medium"><%= @clicks_page.total_entries %></span>
+        results
+      </p>
+    </div>
+    <div>
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <%= if @clicks_page.page_number > 1 do %>
+          <.link href={~p"/links/#{@link.slug}?page=#{@clicks_page.page_number - 1}"} class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            Previous
+          </.link>
+        <% end %>
+        <%= if @clicks_page.page_number < @clicks_page.total_pages do %>
+          <.link href={~p"/links/#{@link.slug}?page=#{@clicks_page.page_number + 1}"} class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            Next
+          </.link>
+        <% end %>
+      </nav>
+    </div>
+  </div>
 </Layouts.app>

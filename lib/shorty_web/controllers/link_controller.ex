@@ -30,9 +30,11 @@ defmodule ShortyWeb.LinkController do
     end
   end
 
-  def show(conn, %{"slug" => slug}) do
+  def show(conn, %{"slug" => slug} = params) do
     link = Shortener.get_link!(slug)
-    render(conn, :show, link: link)
+    page = Map.get(params, "page", "1") |> String.to_integer()
+    clicks_page = Shortener.paginate_clicks_for_link(link, page)
+    render(conn, :show, link: link, clicks_page: clicks_page)
   end
 
   def edit(conn, %{"slug" => slug}) do
@@ -67,6 +69,7 @@ defmodule ShortyWeb.LinkController do
   def redirect_to_original(conn, %{"slug" => slug}) do
     case Shortener.get_link_and_increment_view_count(slug) do
       {:ok, link} ->
+        track_click(conn, link)
         redirect(conn, external: link.original_url)
 
       {:error, :not_found} ->
@@ -93,5 +96,13 @@ defmodule ShortyWeb.LinkController do
       |> redirect(to: ~p"/links")
       |> halt()
     end
+  end
+
+  defp track_click(conn, link) do
+    ip_address = conn.remote_ip |> Tuple.to_list() |> Enum.join(".")
+    user_agent = get_req_header(conn, "user-agent") |> List.first()
+    referrer = get_req_header(conn, "referer") |> List.first()
+
+    Shortener.track_click(link, ip_address, user_agent, referrer)
   end
 end

@@ -10,6 +10,8 @@ defmodule Shorty.Shortener.Link do
 
     belongs_to :user, Shorty.Accounts.User
 
+    has_many :clicks, Shorty.Shortener.Click
+
     timestamps(type: :utc_datetime)
   end
 
