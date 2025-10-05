@@ -7,6 +7,19 @@
 # General application configuration
 import Config
 
+config :shorty, :scopes,
+  user: [
+    default: true,
+    module: Shorty.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: Shorty.AccountsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 config :shorty,
   ecto_repos: [Shorty.Repo],
   generators: [timestamp_type: :utc_datetime]
