@@ -1,5 +1,8 @@
 # Shorty
 
+    Link Shortener app with Elixir & Phoenix
+
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies
