@@ -38,6 +38,9 @@ defmodule Shorty.Shortener do
 
   """
   def get_link!(slug), do: Repo.get_by!(Link, slug: slug)
+  def get_user_link!(%User{} = user, slug) do
+    Repo.get_by!(Link, user_id: user.id, slug: slug)
+  end
 
   @doc """
   Gets a single link with its clicks.
@@ -131,14 +134,19 @@ defmodule Shorty.Shortener do
 
   # Generates a unique, URL-safe, 6-character slug.
   defp generate_slug do
+    chars = Enum.to_list(?a..?z) ++ Enum.to_list(?A..?Z) ++ Enum.to_list(?0..?9)
     slug =
-      :crypto.strong_rand_bytes(6)
-      |> Base.url_encode64()
-      |> binary_part(0, 6)
+      for _ <- 1..6, into: ~c"" do
+        Enum.random(chars)
+      end
+      |> then(&to_string/1)
 
     case Repo.get_by(Link, slug: slug) do
-      nil -> slug
-      _ -> generate_slug()
+      nil ->
+        slug
+
+      _ ->
+        generate_slug()
     end
   end
 

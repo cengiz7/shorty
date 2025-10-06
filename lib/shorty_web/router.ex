@@ -49,11 +49,12 @@ defmodule ShortyWeb.Router do
       on_mount: [{ShortyWeb.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+      live "/links", LinkLive.Index, :index
     end
 
     post "/users/update-password", UserSessionController, :update_password
 
-    resources "/links", LinkController, param: "slug"
+    resources "/links", LinkController, except: [:index], param: "slug"
   end
 
   scope "/", ShortyWeb do

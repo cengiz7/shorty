@@ -31,7 +31,7 @@ defmodule ShortyWeb.LinkController do
   end
 
   def show(conn, %{"slug" => slug} = params) do
-    link = Shortener.get_link!(slug)
+    link = Shortener.get_user_link!(conn.assigns.current_scope.user, slug)
     page = Map.get(params, "page", "1") |> String.to_integer()
     clicks_page = Shortener.paginate_clicks_for_link(link, page)
     render(conn, :show, link: link, clicks_page: clicks_page)
