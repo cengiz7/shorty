@@ -6,6 +6,7 @@ defmodule ShortyWeb.LinkLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Shortener.subscribe()
     {:ok, socket}
   end
 
@@ -36,5 +37,22 @@ defmodule ShortyWeb.LinkLive.Index do
     else
       {:noreply, put_flash(socket, :error, "You are not authorized to delete this link.")}
     end
+  end
+
+  @impl true
+  def handle_info({:link_updated, updated_link}, socket) do
+    current_user_id = socket.assigns.current_scope.user.id
+
+    if updated_link.user_id == current_user_id do
+      {:noreply, update(socket, :links, &update_link_in_list(&1, updated_link))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp update_link_in_list(links, updated_link) do
+    Enum.map(links, fn link ->
+      if link.id == updated_link.id, do: updated_link, else: link
+    end)
   end
 end

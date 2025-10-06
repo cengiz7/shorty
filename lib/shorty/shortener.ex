@@ -10,6 +10,12 @@ defmodule Shorty.Shortener do
   alias Shorty.Shortener.Click
   alias Shorty.Accounts.User
 
+  @topic "links"
+
+  def subscribe do
+    Phoenix.PubSub.subscribe(Shorty.PubSub, @topic)
+  end
+
   @doc """
   Returns the list of links for a user.
 
@@ -173,6 +179,16 @@ defmodule Shorty.Shortener do
         link
         |> Ecto.Changeset.change(%{view_count: link.view_count + 1})
         |> Repo.update()
+        |> then(fn result ->
+          case result do
+          {:ok, updated_link} ->
+            Task.async(fn -> Phoenix.PubSub.broadcast(Shorty.PubSub, @topic, {:link_updated, updated_link}) end)
+            {:ok, updated_link}
+
+          error ->
+            error
+          end
+        end)
     end
   end
 
